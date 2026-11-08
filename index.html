@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#060e0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Elif-Be">
+  <title>Elif-Be | Kur'an Öğreniyorum (Sesli & Kaydırmalı)</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon.svg">
+
+  <!-- Google Fonts: Amiri & Scheherazade for Quranic Calligraphy -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&family=Scheherazade+New:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #040a07;
+      --bg-surface: #0a1811;
+      --bg-card: rgba(12, 28, 20, 0.92);
+      --emerald-primary: #10B981;
+      --emerald-dark: #064E3B;
+      --gold-primary: #D4AF37;
+      --gold-light: #FDF0CD;
+      --gold-gradient: linear-gradient(135deg, #FFF5D6 0%, #D4AF37 50%, #99781E 100%);
+      --emerald-gradient: linear-gradient(135deg, #34D399 0%, #059669 100%);
+      --gold-border: rgba(212, 175, 55, 0.35);
+      --text-main: #F0FDF4;
+      --text-muted: #94A3B8;
+      --accent-glow: rgba(212, 175, 55, 0.28);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    #app {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Ambient Quranic Pattern Background */
+    .ambient-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 25%, rgba(16, 185, 129, 0.08) 0%, transparent 65%),
+                  radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.06) 0%, #040a07 100%);
+      z-index: 0;
+    }
+
+    /* Top Progress Line */
+    .scroll-progress-line {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: var(--gold-gradient);
+      width: 3%;
+      z-index: 100;
+      transition: width 0.2s ease-out;
+    }
+
+    /* Top Sticky Header */
+    header.top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 50;
+      padding: calc(var(--safe-top) + 8px) 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: linear-gradient(to bottom, rgba(4,10,7,0.98) 0%, rgba(4,10,7,0.85) 85%, transparent 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    }
+
+    .header-main-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .quran-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--gold-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px var(--accent-glow);
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .brand-titles {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: #A7F3D0;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header-action {
+      padding: 0 12px;
+      height: 34px;
+      border-radius: 18px;
+      background: var(--bg-surface);
+      border: 1px solid var(--gold-border);
+      color: var(--gold-light);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-header-action:active {
+      transform: scale(0.96);
+      background: rgba(212, 175, 55, 0.2);
+    }
+
+    /* Stage / Level Tabs */
+    .stage-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .stage-tabs::-webkit-scrollbar { display: none; }
+
+    .stage-tab {
+      flex: 1;
+      padding: 6px 10px;
+      border-radius: 12px;
+      background: rgba(10, 24, 17, 0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .stage-tab.active {
+      background: var(--gold-gradient);
+      color: #040A07;
+      border-color: #FFF3D1;
+      box-shadow: 0 0 14px var(--accent-glow);
+      font-weight: 700;
+    }
+
+    /* SCROLL CONTAINER (Snap-Scroll) */
+    #scroll-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+    #scroll-container::-webkit-scrollbar { display: none; }
+
+    /* CARD WRAPPER */
+    .letter-card-wrapper {
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: calc(var(--safe-top) + 95px) 18px calc(var(--safe-bottom) + 80px);
+      box-sizing: border-box;
+    }
+
+    .letter-card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--gold-border);
+      border-radius: 30px;
+      padding: 22px 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 30px rgba(16, 185, 129, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+    }
+
+    .card-meta-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .badge-pill {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold-light);
+      border: 1px solid var(--gold-border);
+      padding: 3px 12px;
+      border-radius: 14px;
+      background: rgba(212, 175, 55, 0.12);
+    }
+
+    .badge-type {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.18);
+      color: #6EE7B7;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+
+    /* GIANT ARABIC LETTER MEDALLION */
+    .giant-letter-frame {
+      width: 180px;
+      height: 180px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 2px 0;
+    }
+
+    .letter-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px dashed var(--gold-primary);
+      opacity: 0.45;
+      animation: rotateRing 60s linear infinite;
+    }
+    @keyframes rotateRing {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .giant-arabic {
+      font-family: 'Amiri', 'Scheherazade New', serif;
+      font-size: 120px;
+      font-weight: 700;
+      line-height: 1;
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.5));
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .giant-arabic:active {
+      transform: scale(1.1);
+    }
+
+    .turkish-letter-name {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    /* Main Big Audio Button */
+    .btn-play-audio {
+      width: 100%;
+      height: 48px;
+      border-radius: 16px;
+      background: var(--gold-gradient);
+      border: none;
+      color: #040A07;
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-play-audio:active {
+      transform: scale(0.97);
+    }
+
+    /* Mahrec Box */
+    .mahrec-box {
+      width: 100%;
+      background: rgba(6, 14, 10, 0.65);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .mahrec-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6EE7B7;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .mahrec-desc {
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #E2E8F0;
+    }
+
+    /* Harekeler Row in Card */
+    .harekeler-preview-box {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .hareke-btn {
+      background: rgba(10, 24, 17, 0.85);
+      border: 1px solid var(--gold-border);
+      border-radius: 14px;
+      padding: 8px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .hareke-btn:active {
+      background: rgba(212, 175, 55, 0.25);
+      transform: scale(0.95);
+    }
+    .hareke-ar {
+      font-family: 'Amiri', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--gold-light);
+      line-height: 1;
+    }
+    .hareke-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      color: #A7F3D0;
+    }
+
+    /* Yazılış Şekilleri Kutusu */
+    .shapes-box {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      background: rgba(6, 14, 10, 0.5);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 8px 10px;
+    }
+    .shape-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .shape-ar {
+      font-family: 'Amiri', serif;
+      font-size: 24px;
+      color: var(--gold-light);
+    }
+    .shape-lbl {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Floating Navigation Controls */
+    .floating-scroll-controls {
+      position: fixed;
+      right: 14px;
+      bottom: calc(var(--safe-bottom) + 78px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 40;
+    }
+
+    .scroll-arrow-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(10, 24, 17, 0.94);
+      border: 1.5px solid var(--gold-border);
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: all 0.2s;
+    }
+    .scroll-arrow-btn:active {
+      transform: scale(0.9);
+      background: var(--gold-gradient);
+      color: #040A07;
+    }
+
+    /* Bottom Control Bar */
+    nav.bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 50;
+      padding: 8px 16px calc(var(--safe-bottom) + 10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      background: linear-gradient(to top, rgba(4,10,7,0.98) 0%, rgba(4,10,7,0.85) 75%, transparent 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(212, 175, 55, 0.15);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      min-width: 68px;
+    }
+    .nav-icon-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 1px solid var(--gold-border);
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+    .nav-item:active .nav-icon-circle {
+      transform: scale(0.95);
+      background: var(--gold-gradient);
+      color: #040A07;
+    }
+
+    /* Modal Sheet Styling */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(4, 10, 7, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 100;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 520px;
+      max-height: 85vh;
+      background: var(--bg-surface);
+      border: 1px solid var(--gold-border);
+      border-bottom: none;
+      border-radius: 28px 28px 0 0;
+      padding: 24px 20px calc(var(--safe-bottom) + 24px);
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.7);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .modal-backdrop.open .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-handle {
+      width: 44px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.2);
+      align-self: center;
+      margin-bottom: -6px;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(4, 10, 7, 0.85);
+      border: 1px solid var(--gold-border);
+      padding: 0 16px;
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .fihrist-list {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      max-height: 55vh;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .fihrist-btn {
+      background: rgba(12, 28, 20, 0.7);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: 16px;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .fihrist-btn:active {
+      background: var(--gold-gradient);
+      color: #040A07;
+    }
+    .fihrist-ar {
+      font-family: 'Amiri', serif;
+      font-size: 32px;
+      color: var(--gold-light);
+    }
+    .fihrist-tr {
+      font-size: 12px;
+      font-weight: 600;
+      color: #CBD5E1;
+    }
+  </style>
+</head>
+<body>
+  <!-- Hidden HTML5 Audio Element for Real Human Audio MP3s -->
+  <audio id="letter-audio" preload="auto"></audio>
+
+  <div id="app">
+    <!-- Top Progress Line -->
+    <div class="scroll-progress-line" id="scroll-progress"></div>
+
+    <!-- Ambient Emerald & Gold Glow -->
+    <div class="ambient-bg"></div>
+
+    <!-- Top Sticky Header -->
+    <header class="top-bar">
+      <div class="header-main-row">
+        <div class="brand-section" onclick="openFihrist()">
+          <div class="quran-badge">📖</div>
+          <div class="brand-titles">
+            <span class="brand-title">Kur'an Elif-Bâ'sı</span>
+            <span class="brand-subtitle">Kaydırmalı & Güçlü Sesli Talim</span>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <button class="btn-header-action" onclick="openFihrist()">
+            <span>🔍</span>
+            <span>28 Harf</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stage / Level Tabs -->
+      <div class="stage-tabs">
+        <button class="stage-tab active" id="tab-1" onclick="switchStage(1)">📗 1. Harfler (Yalın)</button>
+        <button class="stage-tab" id="tab-2" onclick="switchStage(2)">📙 2. Harekeler (E - İ - Ü)</button>
+        <button class="stage-tab" id="tab-3" onclick="switchStage(3)">📕 3. İleri (Cezm • Şedde • Tenvin)</button>
+      </div>
+    </header>
+
+    <!-- MAIN SCROLL FEED -->
+    <main id="scroll-container">
+      <!-- Cards rendered here via JS -->
+    </main>
+
+    <!-- Floating Up/Down Arrows -->
+    <div class="floating-scroll-controls">
+      <button class="scroll-arrow-btn" title="Önceki Harf" onclick="scrollPrev()">▲</button>
+      <button class="scroll-arrow-btn" title="Sonraki Harf" onclick="scrollNext()">▼</button>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-bar">
+      <button class="nav-item" onclick="scrollToIndex(0)">
+        <div class="nav-icon-circle">☝️</div>
+        <span>Elif (Başa)</span>
+      </button>
+
+      <button class="nav-item" onclick="playCurrentActiveAudio()">
+        <div class="nav-icon-circle" style="background:var(--gold-gradient); color:#040A07;">🔊</div>
+        <span style="color:var(--gold-light); font-weight:700;">Sesi Çal</span>
+      </button>
+
+      <button class="nav-item" onclick="openFihrist()">
+        <div class="nav-icon-circle">📑</div>
+        <span>Fihrist</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- FIHRIST (INDEX) MODAL -->
+  <div class="modal-backdrop" id="fihrist-modal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-card">
+      <div class="modal-handle"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="badge-pill">28 Harf Fihristi</span>
+        <button class="close-btn" onclick="closeFihrist()" style="background:none; border:none; color:#94A3B8; font-size:20px; cursor:pointer;">✕</button>
+      </div>
+
+      <input type="text" class="search-input" id="search-input" placeholder="Harf ara (ör: Elif, Be, Cim, Kaf)..." oninput="filterFihrist()">
+
+      <div class="fihrist-list" id="fihrist-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    const lettersData = [{"id":1,"ar":"ا","tr":"Elif","trName":"Elif","type":"İnce","mahrec":"Boğazın en alt kısmından (göğse yakın yerden) çıkar. İnce bir harftir.","audio":"audio/1_alif.mp3","bas":"ا","orta":"ـا","son":"ـا","fetha":"اَ","kasra":"اِ","damma":"اُ","fethaTr":"E","kasraTr":"İ","dammaTr":"Ü / U"},{"id":2,"ar":"ب","tr":"Bâ","trName":"Be","type":"İnce","mahrec":"İki dudağın ıslak kısımları birbirine kuvvetlice bastırılarak çıkarılır.","audio":"audio/2_baa.mp3","bas":"بـ","orta":"ـبـ","son":"ـب","fetha":"بَ","kasra":"بِ","damma":"بُ","fethaTr":"Be","kasraTr":"Bi","dammaTr":"Bü"},{"id":3,"ar":"ت","tr":"Tâ","trName":"Te","type":"İnce","mahrec":"Dilin ucu üst ön dişlerin diş etine yakın iç kısmına dokundurularak çıkarılır.","audio":"audio/3_taa.mp3","bas":"تـ","orta":"ـتـ","son":"ـت","fetha":"تَ","kasra":"تِ","damma":"تُ","fethaTr":"Te","kasraTr":"Ti","dammaTr":"Tü"},{"id":4,"ar":"ث","tr":"Sâ (Peltek)","trName":"Se","type":"İnce (Peltek)","mahrec":"Dilin ucu üst ön dişlerin arasından hafifçe dışarı çıkarılarak yumuşakça söylenir.","audio":"audio/4_thaa.mp3","bas":"ثـ","orta":"ـثـ","son":"ـث","fetha":"ثَ","kasra":"ثِ","damma":"ثُ","fethaTr":"Se","kasraTr":"Si","dammaTr":"Sü"},{"id":5,"ar":"ج","tr":"Cîm","trName":"Cim","type":"İnce","mahrec":"Dilin ortası üst damağa kuvvetlice yapıştırılarak çıkarılır.","audio":"audio/5_jeem.mp3","bas":"جـ","orta":"ـجـ","son":"ـج","fetha":"جَ","kasra":"جِ","damma":"جُ","fethaTr":"Ce","kasraTr":"Ci","dammaTr":"Cü"},{"id":6,"ar":"ح","tr":"Hâ (Boğaz)","trName":"Ha","type":"İnce (Boğaz)","mahrec":"Boğazın tam ortasından, nefes hafifçe sıkılarak tatlı ve duru bir sesle çıkarılır.","audio":"audio/6_haa.mp3","bas":"حـ","orta":"ـحـ","son":"ـح","fetha":"حَ","kasra":"حِ","damma":"حُ","fethaTr":"Ha","kasraTr":"Hı","dammaTr":"Hu"},{"id":7,"ar":"خ","tr":"Hı (Hırıltılı)","trName":"Hı","type":"Kalın (Hırıltılı)","mahrec":"Boğazın ağza en yakın üst kısmından, hafif hırıltılı ve dolgun çıkarılır.","audio":"audio/7_khaa.mp3","bas":"خـ","orta":"ـخـ","son":"ـخ","fetha":"خَ","kasra":"خِ","damma":"خُ","fethaTr":"Ha","kasraTr":"Hı","dammaTr":"Hu"},{"id":8,"ar":"د","tr":"Dâl","trName":"Dal","type":"İnce","mahrec":"Dil ucu üst ön dişlerin iç diplerine dokunarak çıkarılır. Tok ve incedir.","audio":"audio/8_daal.mp3","bas":"د","orta":"ـد","son":"ـد","fetha":"دَ","kasra":"دِ","damma":"دُ","fethaTr":"De","kasraTr":"Di","dammaTr":"Dü"},{"id":9,"ar":"ذ","tr":"Zâl (Peltek)","trName":"Zel","type":"İnce (Peltek)","mahrec":"Dil ucu üst ön dişlerin ucuna hafifçe değdirilerek yumuşak ve peltek çıkarılır.","audio":"audio/9_zaal.mp3","bas":"ذ","orta":"ـذ","son":"ـذ","fetha":"ذَ","kasra":"ذِ","damma":"ذُ","fethaTr":"Ze","kasraTr":"Zi","dammaTr":"Zü"},{"id":10,"ar":"ر","tr":"Râ","trName":"Ra","type":"Harekeli (Kalın/İnce)","mahrec":"Dil ucunun arka yüzü üst ön diş etlerine hafifçe dokunup titreşerek çıkarılır.","audio":"audio/10_raa.mp3","bas":"ر","orta":"ـر","son":"ـر","fetha":"رَ","kasra":"رِ","damma":"رُ","fethaTr":"Ra","kasraTr":"Ri","dammaTr":"Ru"},{"id":11,"ar":"ز","tr":"Zê","trName":"Ze","type":"İnce (Keskin)","mahrec":"Dil ucu alt ön dişlerin ucuna yakın tutulup arı vızıltısı gibi keskin çıkarılır.","audio":"audio/11_zaa.mp3","bas":"ز","orta":"ـز","son":"ـز","fetha":"زَ","kasra":"زِ","damma":"زُ","fethaTr":"Ze","kasraTr":"Zi","dammaTr":"Zü"},{"id":12,"ar":"س","tr":"Sîn","trName":"Sin","type":"İnce (Keskin)","mahrec":"Dil ucu alt ön dişlerin iç tarafına dokunur, ıslık sesi gibi ince ve berraktır.","audio":"audio/12_seen.mp3","bas":"سـ","orta":"ـسـ","son":"ـس","fetha":"سَ","kasra":"سِ","damma":"سُ","fethaTr":"Se","kasraTr":"Si","dammaTr":"Sü"},{"id":13,"ar":"ش","tr":"Şîn","trName":"Şın","type":"İnce","mahrec":"Dil ortası üst damağa doğru kaldırılır, ses ve hava ağız içinde yayılır.","audio":"audio/13_sheen.mp3","bas":"شـ","orta":"ـشـ","son":"ـش","fetha":"شَ","kasra":"شِ","damma":"شُ","fethaTr":"Şe","kasraTr":"Şi","dammaTr":"Şü"},{"id":14,"ar":"ص","tr":"Sâd","trName":"Sad","type":"Kalın (Dolu)","mahrec":"Dil kökü geriye doğru yükseltilir, ağız içi dolgun ve kalın bir 'S' sesi verir.","audio":"audio/14_saad.mp3","bas":"صـ","orta":"ـصـ","son":"ـص","fetha":"صَ","kasra":"صِ","damma":"صُ","fethaTr":"Sa","kasraTr":"Sı","dammaTr":"Su"},{"id":15,"ar":"ض","tr":"Dâd","trName":"Dad","type":"Kalın (Mahreçli)","mahrec":"Dilin sol veya sağ yanı üst azı dişlerine kuvvetlice yapıştırılarak çıkarılır.","audio":"audio/15_daad.mp3","bas":"ضـ","orta":"ـضـ","son":"ـض","fetha":"ضَ","kasra":"ضِ","damma":"ضُ","fethaTr":"Da","kasraTr":"Dı","dammaTr":"Du"},{"id":16,"ar":"ط","tr":"Tı","trName":"Tı","type":"Kalın (Kuvvetli)","mahrec":"Dil ucu ve sırtı üst damağa yapışır, kuvvetli ve kalın bir 'T' çıkar.","audio":"audio/16_taah.mp3","bas":"طـ","orta":"ـطـ","son":"ـط","fetha":"طَ","kasra":"طِ","damma":"طُ","fethaTr":"Ta","kasraTr":"Tı","dammaTr":"Tu"},{"id":17,"ar":"ظ","tr":"Zı (Peltek)","trName":"Zı","type":"Kalın (Peltek)","mahrec":"Dil ucu üst dişlerin ucuna hafifçe değer, ağız dolusu ve peltek çıkarılır.","audio":"audio/17_zhaa.mp3","bas":"ظـ","orta":"ـظـ","son":"ـظ","fetha":"ظَ","kasra":"ظِ","damma":"ظُ","fethaTr":"Za","kasraTr":"Zı","dammaTr":"Zu"},{"id":18,"ar":"ع","tr":"Ayın","trName":"Ayın","type":"İnce (Boğaz)","mahrec":"Boğazın tam ortası hafif sıkılarak çıkarılır. Arapça'nın en karakteristik harfidir.","audio":"audio/18_ain.mp3","bas":"عـ","orta":"ـعـ","son":"ـع","fetha":"عَ","kasra":"عِ","damma":"عُ","fethaTr":"A","kasraTr":"İ","dammaTr":"U"},{"id":19,"ar":"غ","tr":"Gayın","trName":"Gayın","type":"Kalın (Yumuşak)","mahrec":"Boğazın üst kısmından, hafif hırıltılı yumuşak bir 'Ğ' gibi çıkarılır.","audio":"audio/19_ghain.mp3","bas":"غـ","orta":"ـغـ","son":"ـغ","fetha":"غَ","kasra":"غِ","damma":"غُ","fethaTr":"Ga","kasraTr":"Gı","dammaTr":"Gu"},{"id":20,"ar":"ف","tr":"Fê","trName":"Fe","type":"İnce","mahrec":"Üst ön dişlerin uçları alt dudağın ıslak iç kısmına dokundurularak çıkarılır.","audio":"audio/20_faa.mp3","bas":"فـ","orta":"ـفـ","son":"ـف","fetha":"فَ","kasra":"فِ","damma":"فُ","fethaTr":"Fe","kasraTr":"Fi","dammaTr":"Fü"},{"id":21,"ar":"ق","tr":"Kâf","trName":"Kaf","type":"Kalın (Dip Damak)","mahrec":"Dil kökünün en dip kısmı küçük dilin karşısındaki yumuşak damağa vurularak çıkarılır.","audio":"audio/21_qaaf.mp3","bas":"قـ","orta":"ـقـ","son":"ـق","fetha":"قَ","kasra":"قِ","damma":"قُ","fethaTr":"Ka","kasraTr":"Kı","dammaTr":"Ku"},{"id":22,"ar":"ك","tr":"Kêf","trName":"Kef","type":"İnce","mahrec":"Kaf harfinin biraz önünden, sert damağa dokunularak ince ve berrak çıkarılır.","audio":"audio/22_kaaf.mp3","bas":"كـ","orta":"ـكـ","son":"ـك","fetha":"كَ","kasra":"كِ","damma":"كُ","fethaTr":"Ke","kasraTr":"Ki","dammaTr":"Kü"},{"id":23,"ar":"ل","tr":"Lâm","trName":"Lam","type":"İnce","mahrec":"Dil ucunun ön kenarları üst ön diş etlerine değdirilerek çıkarılır.","audio":"audio/23_laam.mp3","bas":"لـ","orta":"ـلـ","son":"ـل","fetha":"لَ","kasra":"لِ","damma":"لُ","fethaTr":"Le","kasraTr":"Li","dammaTr":"Lü"},{"id":24,"ar":"م","tr":"Mîm","trName":"Mim","type":"İnce","mahrec":"Dudakların kuru dış kısımları birbirine kapatılarak çıkarılır. Genizden tatlı ses gelir.","audio":"audio/24_meem.mp3","bas":"مـ","orta":"ـمـ","son":"ـم","fetha":"مَ","kasra":"مِ","damma":"مُ","fethaTr":"Me","kasraTr":"Mi","dammaTr":"Mü"},{"id":25,"ar":"ن","tr":"Nûn","trName":"Nun","type":"İnce","mahrec":"Dil ucu üst ön diş etlerine dokunur, ses genizden (burundan) gelir.","audio":"audio/25_noon.mp3","bas":"نـ","orta":"ـنـ","son":"ـن","fetha":"نَ","kasra":"نِ","damma":"نُ","fethaTr":"Ne","kasraTr":"Ni","dammaTr":"Nü"},{"id":26,"ar":"و","tr":"Vâv","trName":"Vav","type":"İnce","mahrec":"Her iki dudak ileri doğru yuvarlatılarak çıkarılır.","audio":"audio/27_waw.mp3","bas":"و","orta":"ـو","son":"ـو","fetha":"وَ","kasra":"وِ","damma":"وُ","fethaTr":"Ve","kasraTr":"Vi","dammaTr":"Vü"},{"id":27,"ar":"هـ","tr":"Hê","trName":"He","type":"İnce (Göğüs)","mahrec":"Boğazın en altından, göğüsten gelen rahat bir nefesle ince çıkarılır.","audio":"audio/26_haah.mp3","bas":"هـ","orta":"ـهـ","son":"ـه","fetha":"هَ","kasra":"هِ","damma":"هُ","fethaTr":"He","kasraTr":"Hi","dammaTr":"Hü"},{"id":28,"ar":"ي","tr":"Yê","trName":"Ye","type":"İnce","mahrec":"Dilin ortası üst damağa hafifçe yaklaştırılarak ince çıkarılır.","audio":"audio/30_yaa.mp3","bas":"يـ","orta":"ـيـ","son":"ـي","fetha":"يَ","kasra":"يِ","damma":"يُ","fethaTr":"Ye","kasraTr":"Yi","dammaTr":"Yü"}];
+    const advancedData = [{"title":"Cezm (Sükûn) - ْ","badge":"Harfi Tutturma / Durdurma","rule":"Cezm, harfin üzerine konulan küçük daire şeklindedir. Harfi sessiz kılar ve önceki harfe bağlar.","examples":[{"ar":"اَبْ","tr":"Eb","desc":"Elif üstün + Be cezimli"},{"ar":"قُلْ","tr":"Kul","desc":"Kaf ötre + Lam cezimli"},{"ar":"مِنْ","tr":"Min","desc":"Mim esre + Nun cezimli"},{"ar":"كَمْ","tr":"Kem","desc":"Kef üstün + Mim cezimli"}]},{"title":"Şedde (Tecdîd) - ّ","badge":"İki Kere Vurarak Okuma","rule":"Şedde, harfin iki defa okunmasını sağlar. Birincisi cezimli (durarak), ikincisi harekeli okunur.","examples":[{"ar":"اِنَّ","tr":"İn-ne","desc":"Elif esre + Nun şeddeli"},{"ar":"رَبِّ","tr":"Rab-bi","desc":"Ra üstün + Be şeddeli"},{"ar":"ثُمَّ","tr":"Süm-me","desc":"Se ötre + Mim şeddeli"},{"ar":"مَدَّ","tr":"Med-de","desc":"Mim üstün + Dal şeddeli"}]},{"title":"Tenvin (İki Üstün, İki Esre, İki Ötre)","badge":"Sonuna 'N' Sesi Ekleme","rule":"Kelime sonuna gizli bir 'Nun' sesi ekler: İki üstün (En/An), iki esre (İn/In), iki ötre (Ün/Un).","examples":[{"ar":"كِتَابًا","tr":"Kitâben","desc":"İki Üstün örneği"},{"ar":"رَحِيمٌ","tr":"Rahîmün","desc":"İki Ötre örneği"},{"ar":"عَلِيمٍ","tr":"Alîmin","desc":"İki Esre örneği"},{"ar":"غَفُورًا","tr":"Gafûran","desc":"Kalın harfte İki Üstün"}]},{"title":"Med (Uzatma Harfleri: Elif, Vav, Ye)","badge":"1 Elif Miktarı Çekme","rule":"Harekeli bir harften sonra harekesiz Elif, Vav veya Ye gelirse o harf bir elif miktarı uzatılır.","examples":[{"ar":"بَا","tr":"Bâ","desc":"Elif ile çekme (A-E)"},{"ar":"بُو","tr":"Bû","desc":"Vav ile çekme (U-Ü)"},{"ar":"بِي","tr":"Bî","desc":"Ye ile çekme (İ)"},{"ar":"قَالَ","tr":"Kâle","desc":"Kaf harfini uzatarak okuma"}]}];
+
+    let currentActiveIndex = 0;
+    const letterAudio = document.getElementById('letter-audio');
+
+    // SpeechSynthesis setup (fallback / harekeler)
+    function speakArabicText(text) {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ar-SA';
+      u.rate = 0.82;
+      u.pitch = 1.0;
+      window.speechSynthesis.speak(u);
+    }
+
+    // Play human audio recording
+    function playHumanAudio(src, arabicFallback) {
+      if (src) {
+        letterAudio.src = src;
+        letterAudio.play().catch(e => {
+          console.log('Human audio play error, falling back to TTS:', e);
+          if (arabicFallback) speakArabicText(arabicFallback);
+        });
+      } else if (arabicFallback) {
+        speakArabicText(arabicFallback);
+      }
+    }
+
+    function playCurrentActiveAudio() {
+      if (currentActiveIndex < lettersData.length) {
+        const item = lettersData[currentActiveIndex];
+        playHumanAudio(item.audio, item.ar);
+      }
+    }
+
+    // RENDER ALL 3 STAGES IN SCROLL CONTAINER
+    function renderApp() {
+      const container = document.getElementById('scroll-container');
+      let html = '';
+
+      // STAGE 1: 28 LETTERS
+      lettersData.forEach((item, index) => {
+        html += `
+          <section class="letter-card-wrapper" id="card-${index}" data-index="${index}" data-stage="1">
+            <div class="letter-card">
+              <div class="card-meta-row">
+                <span class="badge-pill">Harf ${item.id} / 28</span>
+                <span class="badge-type">${item.type}</span>
+              </div>
+
+              <!-- GIANT LETTER -->
+              <div class="giant-letter-frame" onclick="playHumanAudio('${item.audio}', '${item.ar}')">
+                <div class="letter-ring"></div>
+                <div class="giant-arabic">${item.ar}</div>
+              </div>
+
+              <div class="turkish-letter-name">${item.tr}</div>
+
+              <!-- PROMINENT AUDIO BUTTON -->
+              <button class="btn-play-audio" onclick="playHumanAudio('${item.audio}', '${item.ar}')">
+                <span style="font-size:20px;">🔊</span>
+                <span>Harfi Dinle (Stüdyo Sesi)</span>
+              </button>
+
+              <!-- HAREKELER ROW -->
+              <div class="harekeler-preview-box">
+                <div class="hareke-btn" onclick="speakArabicText('${item.fetha}')">
+                  <div class="hareke-ar">${item.fetha}</div>
+                  <div class="hareke-lbl">Üstün: ${item.fethaTr}</div>
+                </div>
+                <div class="hareke-btn" onclick="speakArabicText('${item.kasra}')">
+                  <div class="hareke-ar">${item.kasra}</div>
+                  <div class="hareke-lbl">Esre: ${item.kasraTr}</div>
+                </div>
+                <div class="hareke-btn" onclick="speakArabicText('${item.damma}')">
+                  <div class="hareke-ar">${item.damma}</div>
+                  <div class="hareke-lbl">Ötre: ${item.dammaTr}</div>
+                </div>
+              </div>
+
+              <!-- MAHREC EXPLANATION -->
+              <div class="mahrec-box">
+                <div class="mahrec-tag">🎯 Mahrec & Çıkarılış Yeri:</div>
+                <div class="mahrec-desc">${item.mahrec}</div>
+              </div>
+
+              <!-- SHAPES (Başta / Ortada / Sonda) -->
+              <div class="shapes-box">
+                <div class="shape-col">
+                  <div class="shape-ar">${item.bas}</div>
+                  <div class="shape-lbl">Başta</div>
+                </div>
+                <div class="shape-col">
+                  <div class="shape-ar">${item.orta}</div>
+                  <div class="shape-lbl">Ortada</div>
+                </div>
+                <div class="shape-col">
+                  <div class="shape-ar">${item.son}</div>
+                  <div class="shape-lbl">Sonda</div>
+                </div>
+                <div class="shape-col">
+                  <div class="shape-ar">${item.ar}</div>
+                  <div class="shape-lbl">Yalın</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+      });
+
+      // STAGE 2: HAREKELER LESSON INTRO & DRILLS
+      const harekelerIndexStart = lettersData.length;
+      const harekeLessons = [
+        {
+          id: 'h1',
+          name: 'Üstün (Fetha) - َ',
+          desc: 'Harfin üzerine konulan eğik çizgidir. İnce harfleri "E", kalın harfleri "A" sesiyle okutur.',
+          examples: [
+            { ar: 'دَرَسَ', tr: 'De-re-se', desc: 'İnce harfler (E sesi)' },
+            { ar: 'كَتَبَ', tr: 'Ke-te-be', desc: 'İnce harfler (E sesi)' },
+            { ar: 'ضَرَبَ', tr: 'Da-ra-be', desc: 'Kalın harfler (A sesi)' },
+            { ar: 'صَبَرَ', tr: 'Sa-ba-ra', desc: 'Kalın harfler (A sesi)' }
+          ]
+        },
+        {
+          id: 'h2',
+          name: 'Esre (Kesra) - ِ',
+          desc: 'Harfin altına konulan eğik çizgidir. İnce harfleri "İ", kalın harfleri "I / I-İ arası" okutur.',
+          examples: [
+            { ar: 'شَرِبَ', tr: 'Şe-ri-be', desc: 'Esre örneği' },
+            { ar: 'عَلِمَ', tr: 'A-li-me', desc: 'Esre örneği' },
+            { ar: 'سَمِعَ', tr: 'Se-mi-a', desc: 'Esre örneği' },
+            { ar: 'بِهِ', tr: 'Bi-hi', desc: 'Esre örneği' }
+          ]
+        },
+        {
+          id: 'h3',
+          name: 'Ötre (Damme) - ُ',
+          desc: 'Harfin üzerine konulan küçük "vav" şeklidir. İnce harfleri "Ü" veya "U-Ü", kalın harfleri "U" okutur.',
+          examples: [
+            { ar: 'كُتِبَ', tr: 'Kü-ti-be', desc: 'Ötre örneği' },
+            { ar: 'رُسُلُ', tr: 'Ru-su-lü', desc: 'Ötre örneği' },
+            { ar: 'خُلِقَ', tr: 'Hu-li-ka', desc: 'Ötre örneği' },
+            { ar: 'نُورُ', tr: 'Nû-ru', desc: 'Ötre örneği' }
+          ]
+        }
+      ];
+
+      harekeLessons.forEach((h, hIdx) => {
+        const cIdx = harekelerIndexStart + hIdx;
+        html += `
+          <section class="letter-card-wrapper" id="card-${cIdx}" data-index="${cIdx}" data-stage="2">
+            <div class="letter-card">
+              <div class="card-meta-row">
+                <span class="badge-pill">Aşama 2: Harekeler</span>
+                <span class="badge-type">${h.id.toUpperCase()}</span>
+              </div>
+
+              <div class="giant-letter-frame" onclick="speakArabicText('${h.examples[0].ar}')">
+                <div class="letter-ring"></div>
+                <div class="giant-arabic" style="font-size:90px;">${h.examples[0].ar}</div>
+              </div>
+
+              <div class="turkish-letter-name">${h.name}</div>
+
+              <div class="mahrec-box">
+                <div class="mahrec-tag">💡 Okunuş Kuralı:</div>
+                <div class="mahrec-desc">${h.desc}</div>
+              </div>
+
+              <div style="width:100%; display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:12px; color:#A7F3D0; font-weight:700;">👇 Kelimelere dokunarak dinleyin:</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                  ${h.examples.map(ex => `
+                    <div class="hareke-btn" onclick="speakArabicText('${ex.ar}')" style="padding:10px;">
+                      <div class="hareke-ar" style="font-size:28px;">${ex.ar}</div>
+                      <div class="hareke-lbl" style="font-size:12px; color:#FFF3D1;">${ex.tr}</div>
+                      <div style="font-size:10px; color:#94A3B8;">${ex.desc}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+      });
+
+      // STAGE 3: ADVANCED (Cezm, Şedde, Tenvin, Med)
+      const advIndexStart = harekelerIndexStart + harekeLessons.length;
+      advancedData.forEach((adv, aIdx) => {
+        const cIdx = advIndexStart + aIdx;
+        html += `
+          <section class="letter-card-wrapper" id="card-${cIdx}" data-index="${cIdx}" data-stage="3">
+            <div class="letter-card">
+              <div class="card-meta-row">
+                <span class="badge-pill">Aşama 3: İleri Seviye</span>
+                <span class="badge-type">${adv.badge}</span>
+              </div>
+
+              <div class="giant-letter-frame" onclick="speakArabicText('${adv.examples[0].ar}')">
+                <div class="letter-ring"></div>
+                <div class="giant-arabic" style="font-size:85px;">${adv.examples[0].ar}</div>
+              </div>
+
+              <div class="turkish-letter-name">${adv.title}</div>
+
+              <div class="mahrec-box">
+                <div class="mahrec-tag">📖 Tecvid ve Okuma Kuralı:</div>
+                <div class="mahrec-desc">${adv.rule}</div>
+              </div>
+
+              <div style="width:100%; display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:12px; color:#A7F3D0; font-weight:700;">👇 Dokunarak sesli dinleyin:</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                  ${adv.examples.map(ex => `
+                    <div class="hareke-btn" onclick="speakArabicText('${ex.ar}')" style="padding:10px;">
+                      <div class="hareke-ar" style="font-size:28px;">${ex.ar}</div>
+                      <div class="hareke-lbl" style="font-size:12px; color:#FFF3D1;">${ex.tr}</div>
+                      <div style="font-size:10px; color:#94A3B8;">${ex.desc}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+      });
+
+      container.innerHTML = html;
+      setupScrollObserver();
+    }
+
+    // Scroll Observer
+    function setupScrollObserver() {
+      const container = document.getElementById('scroll-container');
+      const wrappers = document.querySelectorAll('.letter-card-wrapper');
+      const progressLine = document.getElementById('scroll-progress');
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const idx = parseInt(entry.target.getAttribute('data-index'));
+            currentActiveIndex = idx;
+            const stage = entry.target.getAttribute('data-stage');
+            updateStageTabUI(stage);
+
+            const total = wrappers.length;
+            const progress = ((idx + 1) / total) * 100;
+            if (progressLine) progressLine.style.width = progress + '%';
+          }
+        });
+      }, {
+        root: container,
+        threshold: 0.55
+      });
+
+      wrappers.forEach(w => observer.observe(w));
+    }
+
+    function updateStageTabUI(stage) {
+      document.querySelectorAll('.stage-tab').forEach((t, i) => {
+        if ((i + 1) == stage) t.classList.add('active');
+        else t.classList.remove('active');
+      });
+    }
+
+    function switchStage(stageNum) {
+      if (stageNum === 1) scrollToIndex(0);
+      else if (stageNum === 2) scrollToIndex(lettersData.length);
+      else if (stageNum === 3) scrollToIndex(lettersData.length + 3);
+    }
+
+    function scrollNext() {
+      const total = document.querySelectorAll('.letter-card-wrapper').length;
+      if (currentActiveIndex < total - 1) {
+        scrollToIndex(currentActiveIndex + 1);
+      }
+    }
+
+    function scrollPrev() {
+      if (currentActiveIndex > 0) {
+        scrollToIndex(currentActiveIndex - 1);
+      }
+    }
+
+    function scrollToIndex(idx) {
+      const target = document.getElementById('card-' + idx);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        scrollNext();
+      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        e.preventDefault();
+        scrollPrev();
+      }
+    });
+
+    // Fihrist Modal
+    function openFihrist() {
+      renderFihristGrid(lettersData);
+      document.getElementById('fihrist-modal').classList.add('open');
+    }
+
+    function closeFihrist() {
+      document.getElementById('fihrist-modal').classList.remove('open');
+    }
+
+    function renderFihristGrid(list) {
+      const grid = document.getElementById('fihrist-grid');
+      grid.innerHTML = list.map((item, idx) => `
+        <div class="fihrist-btn" onclick="selectFromFihrist(${idx})">
+          <div class="fihrist-ar">${item.ar}</div>
+          <div class="fihrist-tr">${item.trName}</div>
+        </div>
+      `).join('');
+    }
+
+    function filterFihrist() {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      const filtered = lettersData.filter(l => 
+        l.tr.toLowerCase().includes(q) || 
+        l.trName.toLowerCase().includes(q) || 
+        l.ar.includes(q)
+      );
+      renderFihristGrid(filtered);
+    }
+
+    function selectFromFihrist(idx) {
+      closeFihrist();
+      scrollToIndex(idx);
+    }
+
+    function closeModalOnBackdrop(e) {
+      if (e.target.classList.contains('modal-backdrop')) {
+        closeFihrist();
+      }
+    }
+
+    // Initialize
+    renderApp();
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').catch(e => console.log('SW error:', e));
+      });
+    }
+  </script>
+</body>
+</html>
